@@ -503,14 +503,40 @@ export class ClimateDataService {
     return DEFAULT_USERS;
   }
 
-  static async submitFeedback(user_id: string, f_type: string, comments: string, rating: number): Promise<UserFeedback> {
+  static async submitFeedback(
+    user_id: string,
+    f_type: string,
+    comments: string,
+    rating: number,
+    userInfo?: { name?: string; email?: string }
+  ): Promise<UserFeedback> {
     let validUserId = user_id;
     if (!validUserId || !validUserId.includes('-') || validUserId.length < 32) {
-      validUserId = DEFAULT_USERS[0].User_ID;
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        validUserId = crypto.randomUUID();
+      } else {
+        validUserId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === 'x' ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      }
     }
 
     const users = await this.getUsers();
-    const activeUser = users.find(u => u.User_ID === user_id || u.User_ID === validUserId) || DEFAULT_USERS[0];
+    let activeUser = users.find(u => u.User_ID === user_id || u.User_ID === validUserId);
+
+    if (!activeUser) {
+      const shortSuffix = validUserId.replace(/-/g, '').slice(0, 8);
+      activeUser = {
+        User_ID: validUserId,
+        User_Name: userInfo?.name || 'Visitor',
+        Email: userInfo?.email || `visitor_${shortSuffix}@climate-intel.local`,
+        Phone_no: null,
+        DOB: null,
+        Role: 'user',
+      };
+    }
 
     const feedbackItem: UserFeedback = {
       F_ID: Math.floor(Math.random() * 900000) + 500000,
