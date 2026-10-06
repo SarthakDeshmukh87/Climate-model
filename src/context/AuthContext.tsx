@@ -114,9 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password?: string, customName?: string): Promise<boolean> => {
     setIsLoading(true);
-    try {
-      await supabase.auth.signInWithOtp({ email });
-    } catch {}
+    if (password && password.trim()) {
+      try {
+        await supabase.auth.signInWithPassword({ email, password });
+      } catch {}
+    }
 
     const users = await ClimateDataService.getUsers();
     let found = users.find(u => u.Email.toLowerCase() === email.toLowerCase());
