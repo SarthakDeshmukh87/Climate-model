@@ -130,8 +130,14 @@ export function calculateHeatwaveRisk(
  * Fetch live weather from IMD API (or fallback pipeline when direct auth/IP restriction applies)
  */
 async function fetchFromIMDDirect(latitude: number, longitude: number): Promise<any | null> {
+  const imdKey = process.env.NEXT_PUBLIC_IMD_API_KEY;
   const imdBaseUrl = process.env.NEXT_PUBLIC_IMD_BASE_URL || 'https://api.imd.gov.in/api/v1';
-  const imdKey = process.env.NEXT_PUBLIC_IMD_API_KEY || '';
+
+  // If no IMD API key is provided, skip immediately to Open-Meteo fallback
+  // This avoids browser CORS blocked requests and 401 Unauthorized errors
+  if (!imdKey || !imdKey.trim()) {
+    return null;
+  }
 
   try {
     const controller = new AbortController();
@@ -139,11 +145,9 @@ async function fetchFromIMDDirect(latitude: number, longitude: number): Promise<
 
     const headers: Record<string, string> = {
       'Accept': 'application/json',
+      'X-Api-Key': imdKey,
+      'Authorization': `Bearer ${imdKey}`,
     };
-    if (imdKey) {
-      headers['X-Api-Key'] = imdKey;
-      headers['Authorization'] = `Bearer ${imdKey}`;
-    }
 
     // Try IMD current weather endpoint
     const res = await fetch(`${imdBaseUrl}/current_wx`, {

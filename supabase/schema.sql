@@ -104,7 +104,12 @@ ALTER TABLE public."User_Feedback" ENABLE ROW LEVEL SECURITY;
 
 -- Clean up existing policies before recreating to avoid duplicate errors
 DROP POLICY IF EXISTS "Public read weather stations" ON public."Weather_Station";
+DROP POLICY IF EXISTS "Public insert weather stations" ON public."Weather_Station";
+DROP POLICY IF EXISTS "Public update weather stations" ON public."Weather_Station";
 DROP POLICY IF EXISTS "Public read station locations" ON public."Station_Location";
+DROP POLICY IF EXISTS "Public insert station locations" ON public."Station_Location";
+DROP POLICY IF EXISTS "Public update station locations" ON public."Station_Location";
+DROP POLICY IF EXISTS "Public delete station locations" ON public."Station_Location";
 DROP POLICY IF EXISTS "Public read observations" ON public."Weather_Observation";
 DROP POLICY IF EXISTS "Public read report analysis" ON public."Report_Analysis";
 DROP POLICY IF EXISTS "Public read predictions" ON public."Heatwave_Prediction";
@@ -115,6 +120,7 @@ DROP POLICY IF EXISTS "Public update user profiles" ON public."User";
 DROP POLICY IF EXISTS "Public insert feedback" ON public."User_Feedback";
 DROP POLICY IF EXISTS "Public read feedback" ON public."User_Feedback";
 DROP POLICY IF EXISTS "Admin full access stations" ON public."Weather_Station";
+DROP POLICY IF EXISTS "Admin full access station locations" ON public."Station_Location";
 DROP POLICY IF EXISTS "Admin full access observations" ON public."Weather_Observation";
 DROP POLICY IF EXISTS "Admin full access predictions" ON public."Heatwave_Prediction";
 DROP POLICY IF EXISTS "Admin full access alerts" ON public."Alert";
@@ -122,7 +128,14 @@ DROP POLICY IF EXISTS "Admin full access feedback" ON public."User_Feedback";
 
 -- RLS Policies
 CREATE POLICY "Public read weather stations" ON public."Weather_Station" FOR SELECT USING (true);
+CREATE POLICY "Public insert weather stations" ON public."Weather_Station" FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update weather stations" ON public."Weather_Station" FOR UPDATE USING (true);
+
 CREATE POLICY "Public read station locations" ON public."Station_Location" FOR SELECT USING (true);
+CREATE POLICY "Public insert station locations" ON public."Station_Location" FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update station locations" ON public."Station_Location" FOR UPDATE USING (true);
+CREATE POLICY "Public delete station locations" ON public."Station_Location" FOR DELETE USING (true);
+
 CREATE POLICY "Public read observations" ON public."Weather_Observation" FOR SELECT USING (true);
 CREATE POLICY "Public read report analysis" ON public."Report_Analysis" FOR SELECT USING (true);
 CREATE POLICY "Public read predictions" ON public."Heatwave_Prediction" FOR SELECT USING (true);
@@ -139,6 +152,7 @@ CREATE POLICY "Public read feedback" ON public."User_Feedback" FOR SELECT USING 
 
 -- Admin Full Access Policy
 CREATE POLICY "Admin full access stations" ON public."Weather_Station" FOR ALL USING (true);
+CREATE POLICY "Admin full access station locations" ON public."Station_Location" FOR ALL USING (true);
 CREATE POLICY "Admin full access observations" ON public."Weather_Observation" FOR ALL USING (true);
 CREATE POLICY "Admin full access predictions" ON public."Heatwave_Prediction" FOR ALL USING (true);
 CREATE POLICY "Admin full access alerts" ON public."Alert" FOR ALL USING (true);
