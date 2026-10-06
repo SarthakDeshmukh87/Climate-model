@@ -57,56 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function loadUserSession() {
-      // 1. Check local cached user first for instant hydration
-      if (typeof window !== 'undefined') {
-        const storedUser = localStorage.getItem('ci_active_user');
-        if (storedUser) {
-          try {
-            const parsed: User = JSON.parse(storedUser);
-            if (parsed && parsed.User_ID) {
-              setUser(parsed);
-              setRole(parsed.Role || 'user');
-              setIsLoading(false);
-              syncUserToSupabase(parsed);
-              return;
-            }
-          } catch {}
-        }
-      }
-
-      // 2. Set default guest state immediately so UI does not stall
+      // Everyone starts as a guest — no auto-login from cached sessions.
+      // Users must explicitly log in via the Auth Modal to get their role.
       setUser(null);
       setRole('user');
       setIsLoading(false);
-
-      // 3. Check Supabase session asynchronously in background
-      try {
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
-          setTimeout(() => resolve({ data: { session: null } }), 1000)
-        );
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-        
-        if (session && session.user) {
-          const users = await ClimateDataService.getUsers();
-          let found = users.find(u => u.User_ID === session.user.id || u.Email === session.user.email);
-          if (!found) {
-            found = {
-              User_ID: session.user.id,
-              User_Name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-              Email: session.user.email || '',
-              Phone_no: session.user.user_metadata?.phone_no || null,
-              DOB: session.user.user_metadata?.dob || null,
-              Role: session.user.user_metadata?.role || (session.user.email?.includes('admin') ? 'admin' : 'user'),
-            };
-          }
-          setUser(found);
-          setRole(found.Role);
-          syncUserToSupabase(found);
-        }
-      } catch (err) {
-        // Silently handle auth timeout or network unreachable
-      }
     }
 
     loadUserSession();
